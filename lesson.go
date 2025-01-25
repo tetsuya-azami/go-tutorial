@@ -18,7 +18,11 @@ func main() {
 	// array()
 	// slice()
 	// byteString()
-	mapFunc()
+	// mapFunc()
+	// added, subtracted := calc(1, 2)
+	// fmt.Println(added, subtracted)
+	// funcLiteral()
+	cloasure()
 }
 
 func bazz() {
@@ -71,4 +75,42 @@ func mapFunc() {
 	fmt.Println(v, ok) // 150 true
 	v2, ok2 := m["nothing"]
 	fmt.Println(v2, ok2) // 0 false
+}
+
+func calc(x int, y int) (added int, subtracted int) {
+	added = x + y
+	subtracted = x - y
+	return
+}
+
+func funcLiteral() {
+	f := func(x int, y int) (added int) {
+		added = x + y
+		return
+	}
+	fmt.Println(f(1, 2))
+}
+
+func cloasure() {
+	x := 0
+	incrementCallByValue := func(x int) int { // 値渡し
+		x++
+		return x
+	}
+
+	fmt.Println(incrementCallByValue(x)) // 1
+	fmt.Println(incrementCallByValue(x)) // 1
+	fmt.Println(incrementCallByValue(x)) // 1
+	fmt.Println(x)                       // 0
+
+	x = 0
+	incrementCallByReference := func(x *int) int { // 参照渡し
+		*x++
+		return *x
+	}
+
+	fmt.Println(incrementCallByReference(&x)) // 1
+	fmt.Println(incrementCallByReference(&x)) // 2
+	fmt.Println(incrementCallByReference(&x)) // 3
+	fmt.Println(x)                            // 3
 }
