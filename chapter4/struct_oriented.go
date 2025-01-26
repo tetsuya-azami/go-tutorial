@@ -14,11 +14,20 @@ type Human interface {
 
 type Person struct {
 	Name string
+	Age  int
+}
+
+type UserNotFound struct {
+	Username string
 }
 
 func (p *Person) Say() string {
 	p.Name = "Mr." + p.Name
 	return p.Name
+}
+
+func (p Person) String() string {
+	return fmt.Sprintf("My name is %v", p.Name)
 }
 
 func New(x, y int) *Vertex {
@@ -41,9 +50,11 @@ func main() {
 	// say()
 	// DriveCar(&Person{"Mike"})
 	// do(10)
-	do2(10)
-	do2("Mike")
-	do2(true)
+	// do2(10)
+	// do2("Mike")
+	// do2(true)
+	// stringer()
+	customError()
 }
 
 func add() {
@@ -74,7 +85,7 @@ func originalType() {
 }
 
 func say() {
-	var mike Human = &Person{"Mike"}
+	var mike Human = &Person{"Mike", 11}
 	mike.Say()
 }
 
@@ -98,4 +109,28 @@ func do2(i interface{}) {
 	case string:
 		fmt.Println(v + "!")
 	}
+}
+
+func stringer() {
+	mike := Person{"Mike", 22}
+	fmt.Println(mike)
+}
+
+func myFunc() error {
+	// something wrong
+	ok := false
+	if ok {
+		return nil
+	}
+	return &UserNotFound{Username: "mike"}
+}
+
+func customError() {
+	if err := myFunc(); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func (e *UserNotFound) Error() string {
+	return fmt.Sprintf("User not found: %v", e.Username)
 }
