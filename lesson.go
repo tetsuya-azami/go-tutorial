@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"os"
 )
 
 func init() {
@@ -22,7 +25,16 @@ func main() {
 	// added, subtracted := calc(1, 2)
 	// fmt.Println(added, subtracted)
 	// funcLiteral()
-	cloasure()
+	// cloasure()
+	// forStatement()
+	// deferPractice()
+	// stackingDefer()
+	// fileLoad()
+	// logFatalError()
+	// loggingSettings("test.log")
+	// logFatalError()
+	save()
+	fmt.Println("ok?")
 }
 
 func bazz() {
@@ -113,4 +125,80 @@ func cloasure() {
 	fmt.Println(incrementCallByReference(&x)) // 2
 	fmt.Println(incrementCallByReference(&x)) // 3
 	fmt.Println(x)                            // 3
+}
+
+func forStatement() {
+	// lenでsliceをループ
+	// s := []string{"java", "python", "c"}
+	// for i := 0; i < len(s); i++ {
+	// 	fmt.Println(i, s[i])
+	// }
+
+	// rangeでスライスをループ
+	// s := []string{"java", "python", "c"}
+	// for i, v := range s {
+	// 	fmt.Println(i, v)
+	// }
+
+	// mapをループ
+	m := map[string]int{"apple": 100, "banana": 200}
+	for k, v := range m {
+		fmt.Println(k, v)
+	}
+}
+
+func deferPractice() {
+	defer fmt.Println("deferPractice start") // deferは関数の最後に実行される
+	deferPracticeInner := func() {
+		defer fmt.Println("deferPracticeInner start")
+		fmt.Println("deferPracticeInner end")
+	}
+	deferPracticeInner()
+	fmt.Println("deferPractice end")
+	// deferPracticeInner end
+	// deferPracticeInner start
+	// deferPractice end
+	// deferPractice start
+}
+
+func stackingDefer() {
+	defer fmt.Println("stackingDefer 1")
+	defer fmt.Println("stackingDefer 2")
+	defer fmt.Println("stackingDefer 3")
+}
+
+func fileLoad() {
+	f, _ := os.Open("lesson.go")
+	defer f.Close()
+	data := make([]byte, 100)
+	f.Read(data)
+	fmt.Println(string(data))
+}
+
+func logFatalError() {
+	f, err := os.Open("notExistsFile")
+	defer f.Close()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println("ok")
+}
+
+func loggingSettings(logFile string) {
+	logfile, _ := os.OpenFile(logFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	multiLogFile := io.MultiWriter(os.Stdout, logfile)
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetOutput(multiLogFile)
+}
+
+func thirdPartyConnectDB() {
+	panic("Unable to connect database")
+}
+
+func save() {
+	defer func() {
+		s := recover()
+		fmt.Println(s)
+	}()
+	thirdPartyConnectDB()
 }
