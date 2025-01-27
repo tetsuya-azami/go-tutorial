@@ -6,13 +6,33 @@ import (
 	"time"
 )
 
+type Counter struct {
+	m   map[string]int
+	mux sync.Mutex
+}
+
+func (c *Counter) Increase(key string) {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+	c.m[key]++
+}
+
+func (c *Counter) Value(key string) int {
+	c.mux.Lock()
+	defer c.mux.Unlock()
+	return c.m[key]
+}
+
 func main() {
 	// goroutineMain()
 	// channel()
 	// bufferdChannel()
 	// bufferdChannel()
 	// prodCons()
-	testChannelLoop()
+	// testChannelLoop()
+	// pipeline()
+	// selectChannel()
+	syncMutex()
 }
 
 func goroutineMain() {
@@ -116,4 +136,86 @@ func testChannelLoop() {
 		fmt.Println(v)
 	}
 	fmt.Println("done")
+}
+
+func pipeline() {
+	first := make(chan int)
+	second := make(chan int)
+	third := make(chan int)
+
+	go producer1(first)
+	go multii2(first, second)
+	go multi4(second, third)
+	for result := range third {
+		fmt.Println(result)
+	}
+}
+
+func producer1(first chan int) {
+	defer close(first)
+	for i := 0; i < 10; i++ {
+		first <- i
+	}
+}
+
+func multii2(first <-chan int, second chan<- int) {
+	defer close(second)
+	for i := range first {
+		second <- i * 2
+	}
+}
+
+func multi4(second <-chan int, third chan<- int) {
+	defer close(third)
+	for i := range second {
+		third <- i * 4
+	}
+}
+
+func selectChannel() {
+	c1 := make(chan string)
+	c2 := make(chan string)
+	go selectChannelGoroutine1(c1)
+	go selectChannelGoroutine2(c2)
+
+	for {
+		select {
+		case msg1 := <-c1:
+			fmt.Println(msg1)
+		case msg2 := <-c2:
+			fmt.Println(msg2)
+		}
+	}
+}
+
+func selectChannelGoroutine1(c chan string) {
+	for {
+		c <- "packed from 1"
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func selectChannelGoroutine2(c chan string) {
+	for {
+		c <- "packed from 2"
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func syncMutex() {
+	c := Counter{m: make(map[string]int)}
+
+	go func() {
+		for i := 0; i < 10; i++ {
+			c.Increase("key")
+		}
+	}()
+	go func() {
+		for i := 0; i < 10; i++ {
+			c.Increase("key")
+		}
+	}()
+
+	time.Sleep(1 * time.Second)
+	fmt.Println(c.Value("key"))
 }
