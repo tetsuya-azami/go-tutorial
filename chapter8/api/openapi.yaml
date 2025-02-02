@@ -7,7 +7,7 @@ servers:
   - url: http://localhost:8080/api/v1
   - url: http://127.0.0.1:8080/api/v1
 paths:
-  /album:
+  /albums:
     post:
       summary: Create a new album
       operationId: createAlbum
@@ -26,6 +26,35 @@ paths:
                 $ref: '#/components/schemas/AlbumResponse'
         '400':
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /album/{id}:
+    get:
+      summary: Find album by ID
+      operationId: getAlbumById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlbumResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
           content:
             application/json:
               schema:
