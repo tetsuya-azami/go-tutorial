@@ -18,6 +18,7 @@ require (
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
+	rsc.io/quote v1.5.2
 )
 
 require (
@@ -67,4 +68,5 @@ require (
 	golang.org/x/tools v0.29.0 // indirect
 	google.golang.org/protobuf v1.36.4 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	rsc.io/sampler v1.3.0 // indirect
 )
