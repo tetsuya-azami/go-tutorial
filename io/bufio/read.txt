@@ -1,0 +1,4 @@
+read用のtxtです。
+hoge
+huga
+nonao
