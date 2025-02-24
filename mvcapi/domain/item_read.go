@@ -41,6 +41,6 @@ func NewItemRead(
 	}, nil
 }
 
-func (itemRead *ItemRead) isDeleted() bool {
+func (itemRead *ItemRead) IsDeleted() bool {
 	return !itemRead.deletedAt.IsZero()
 }
