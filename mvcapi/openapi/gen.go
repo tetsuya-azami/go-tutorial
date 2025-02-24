@@ -13,11 +13,6 @@ import (
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 )
 
-// PingResponse defines model for PingResponse.
-type PingResponse struct {
-	Ping string `json:"ping"`
-}
-
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
@@ -173,7 +168,9 @@ type GetPingResponseObject interface {
 	VisitGetPingResponse(w http.ResponseWriter) error
 }
 
-type GetPing200JSONResponse PingResponse
+type GetPing200JSONResponse struct {
+	Ping string `json:"ping"`
+}
 
 func (response GetPing200JSONResponse) VisitGetPingResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
