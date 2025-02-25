@@ -8,7 +8,7 @@ type Clock interface {
 
 type MyClock struct{}
 
-func (_ *MyClock) Now() time.Time {
+func (*MyClock) Now() time.Time {
 	return time.Now()
 }
 
