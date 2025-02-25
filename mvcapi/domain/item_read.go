@@ -44,3 +44,44 @@ func NewItemRead(
 func (itemRead *ItemRead) IsDeleted() bool {
 	return !itemRead.deletedAt.IsZero()
 }
+
+// 全プロパティのgetterを生成してください
+func (itemRead *ItemRead) Id() string {
+	return itemRead.id
+}
+
+func (itemRead *ItemRead) JanCode() string {
+	return itemRead.janCode
+}
+
+func (itemRead *ItemRead) ItemName() string {
+	return itemRead.itemName
+}
+
+func (itemRead *ItemRead) Price() int {
+	return itemRead.price
+}
+
+func (itemRead *ItemRead) CategoryId() int {
+	return itemRead.categoryId
+}
+
+func (itemRead *ItemRead) SeriesId() int {
+	return itemRead.seriesId
+}
+
+func (itemRead *ItemRead) Stock() int {
+	return itemRead.stock
+}
+
+func (itemRead *ItemRead) Discontinued() bool {
+	return itemRead.discontinued
+}
+
+func (itemRead *ItemRead) ReleaseDate() time.Time {
+	return itemRead.releaseDate
+}
+
+func (itemRead *ItemRead) DeletedAt() time.Time {
+	return itemRead.deletedAt
+}
