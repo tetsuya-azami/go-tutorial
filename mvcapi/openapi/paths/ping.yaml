@@ -1,8 +1,0 @@
-get:
-  responses:
-    '200':
-      description: pet response
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/PingResponse'

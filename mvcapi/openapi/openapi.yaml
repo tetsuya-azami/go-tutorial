@@ -4,9 +4,31 @@ info:
   title: Minimal ping API server
 paths:
   /ping:
-    $ref: "./paths/ping.yaml"
+    get:
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PingResponse'
   /items:
-    $ref: "./paths/items.yaml"
+    get:
+      responses:
+        '200':
+          description: get items response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Item'
+                required:
+                  - items
+
 components:
   schemas:
     PingResponse:
