@@ -24,7 +24,7 @@ func TestItemGetter_GetItem_NoItem(t *testing.T) {
 	wantCount := 0
 
 	// act
-	actuals := itemGetter.GetItem()
+	actuals := itemGetter.GetItems()
 
 	// assert
 	if len(actuals) != wantCount {
@@ -39,7 +39,7 @@ func TestItemGetter_GetItem_OneItem(t *testing.T) {
 	wantCount := 1
 
 	// act
-	actuals := itemGetter.GetItem()
+	actuals := itemGetter.GetItems()
 
 	// assert
 	if len(actuals) != wantCount {
@@ -59,7 +59,7 @@ func TestItemGetter_GetItem_MultipleItem(t *testing.T) {
 	wantCount := 2
 
 	// act
-	actuals := itemGetter.GetItem()
+	actuals := itemGetter.GetItems()
 
 	// assert
 	if len(actuals) != wantCount {
