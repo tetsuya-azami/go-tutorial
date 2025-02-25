@@ -44,3 +44,6 @@ go.work
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode
+
+# generated redoc html
+mvcapi/openapi/redoc-static.html
