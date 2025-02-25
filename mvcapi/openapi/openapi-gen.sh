@@ -1,2 +1,2 @@
 #!/bin/bash
-oapi-codegen -config config.yaml openapi.yaml
+oapi-codegen -config ./config.yaml openapi.yaml

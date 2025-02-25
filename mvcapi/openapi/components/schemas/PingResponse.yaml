@@ -1,9 +1,0 @@
-title: PingResponse
-description: A simple response to a ping request
-type: object
-properties:
-  ping:
-    type: string
-    example: pong
-required:
-  - ping

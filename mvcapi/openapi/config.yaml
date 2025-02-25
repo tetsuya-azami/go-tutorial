@@ -1,6 +1,8 @@
 package: api
 generate:
-  gorilla-server: true
   models: true
+  gorilla-server: true
   strict-server: true
 output: gen.go
+output-options:
+  skip-prune: true

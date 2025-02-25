@@ -1,0 +1,10 @@
+get:
+  responses:
+    '200':
+      description: get items response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Item'

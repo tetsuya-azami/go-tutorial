@@ -5,3 +5,60 @@ info:
 paths:
   /ping:
     $ref: "./paths/ping.yaml"
+  /items:
+    $ref: "./paths/items.yaml"
+components:
+  schemas:
+    PingResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: pong
+      required:
+        - message
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+          example: AB-1234
+        janCode:
+          type: string
+          example: AAAA-0001
+        itemName:
+          type: string
+          example: Stratocaster
+        price:
+          type: integer
+          format: int64
+          example: 100000
+        categoryId:
+          type: integer
+          format: int64
+          example: 12345
+        seriesId:
+          type: integer
+          format: int64
+          example: 12345
+        stock:
+          type: integer
+          format: int64
+          example: 5
+        discontinued:
+          type: boolean
+          example: false
+        releasedDate:
+          type: string
+          format: date
+          example: 2021-01-01
+      required:
+        - id
+        - janCode
+        - itemName
+        - price
+        - categoryId
+        - seriesId
+        - stock
+        - discontinued
+        - releasedDate

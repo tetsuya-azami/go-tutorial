@@ -5,4 +5,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/PingResponse.yaml'
+            $ref: '#/components/schemas/PingResponse'
