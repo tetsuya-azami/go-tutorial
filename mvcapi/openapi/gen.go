@@ -11,10 +11,32 @@ import (
 
 	"github.com/gorilla/mux"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
+
+// Item defines model for Item.
+type Item struct {
+	CategoryId   int64              `json:"categoryId"`
+	Discontinued bool               `json:"discontinued"`
+	Id           string             `json:"id"`
+	ItemName     string             `json:"itemName"`
+	JanCode      string             `json:"janCode"`
+	Price        int64              `json:"price"`
+	ReleasedDate openapi_types.Date `json:"releasedDate"`
+	SeriesId     int64              `json:"seriesId"`
+	Stock        int64              `json:"stock"`
+}
+
+// PingResponse defines model for PingResponse.
+type PingResponse struct {
+	Message string `json:"message"`
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (GET /items)
+	GetItems(w http.ResponseWriter, r *http.Request)
 
 	// (GET /ping)
 	GetPing(w http.ResponseWriter, r *http.Request)
@@ -28,6 +50,20 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetItems operation middleware
+func (siw *ServerInterfaceWrapper) GetItems(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetItems(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // GetPing operation middleware
 func (siw *ServerInterfaceWrapper) GetPing(w http.ResponseWriter, r *http.Request) {
@@ -156,9 +192,27 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	r.HandleFunc(options.BaseURL+"/items", wrapper.GetItems).Methods("GET")
+
 	r.HandleFunc(options.BaseURL+"/ping", wrapper.GetPing).Methods("GET")
 
 	return r
+}
+
+type GetItemsRequestObject struct {
+}
+
+type GetItemsResponseObject interface {
+	VisitGetItemsResponse(w http.ResponseWriter) error
+}
+
+type GetItems200JSONResponse []Item
+
+func (response GetItems200JSONResponse) VisitGetItemsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetPingRequestObject struct {
@@ -168,9 +222,7 @@ type GetPingResponseObject interface {
 	VisitGetPingResponse(w http.ResponseWriter) error
 }
 
-type GetPing200JSONResponse struct {
-	Ping string `json:"ping"`
-}
+type GetPing200JSONResponse PingResponse
 
 func (response GetPing200JSONResponse) VisitGetPingResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -181,6 +233,9 @@ func (response GetPing200JSONResponse) VisitGetPingResponse(w http.ResponseWrite
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+
+	// (GET /items)
+	GetItems(ctx context.Context, request GetItemsRequestObject) (GetItemsResponseObject, error)
 
 	// (GET /ping)
 	GetPing(ctx context.Context, request GetPingRequestObject) (GetPingResponseObject, error)
@@ -213,6 +268,30 @@ type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
 	options     StrictHTTPServerOptions
+}
+
+// GetItems operation middleware
+func (sh *strictHandler) GetItems(w http.ResponseWriter, r *http.Request) {
+	var request GetItemsRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetItems(ctx, request.(GetItemsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetItems")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetItemsResponseObject); ok {
+		if err := validResponse.VisitGetItemsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
 }
 
 // GetPing operation middleware
