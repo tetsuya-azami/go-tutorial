@@ -11,15 +11,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Server struct {
-	*controller.PingController
-	*controller.ItemController
-}
-
-func NewServer() Server {
-	return Server{}
-}
-
 var ItemRepository *repository.ItemRepository
 var ItemGetter *usecase.ItemGetter
 var ItemsController *controller.ItemController
@@ -29,6 +20,18 @@ func init() {
 	ItemRepository = repository.NewItemRepository(mc)
 	ItemGetter = usecase.NewItemGetter(ItemRepository)
 	ItemsController = controller.NewItemsController(ItemGetter)
+}
+
+type Server struct {
+	*controller.PingController
+	*controller.ItemController
+}
+
+func NewServer() Server {
+	return Server{
+		PingController: &controller.PingController{},
+		ItemController: ItemsController,
+	}
 }
 
 func main() {

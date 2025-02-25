@@ -18,9 +18,9 @@ func NewItemsController(ig usecase.ItemGetterInterface) *ItemController {
 
 func (ic *ItemController) GetItems(ctx context.Context, request api.GetItemsRequestObject) (api.GetItemsResponseObject, error) {
 	items := ic.itemGetter.GetItems()
-	resp := api.GetItems200JSONResponse{}
+	resp := api.GetItems200JSONResponse{Items: []api.Item{}}
 	for _, item := range items {
-		resp = append(resp, api.Item{
+		resp.Items = append(resp.Items, api.Item{
 			Id:           item.Id(),
 			ItemName:     item.ItemName(),
 			JanCode:      item.JanCode(),
