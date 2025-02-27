@@ -9,7 +9,7 @@ import (
 
 type ItemRepositoryInterface interface {
 	GetItems() []*domain.ItemRead
-	GetItemById(id string) (*domain.ItemRead, error)
+	GetItemById(id string) (*domain.ItemRead, customerr.RepositoryErrorInterface)
 }
 
 type ItemRepository struct {
