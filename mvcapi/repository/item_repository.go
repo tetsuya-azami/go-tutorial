@@ -3,11 +3,13 @@ package repository
 import (
 	"fmt"
 	"mvc-api/domain"
+	"mvc-api/repository/customerr"
 	"mvc-api/repository/internal/data"
 )
 
 type ItemRepositoryInterface interface {
 	GetItems() []*domain.ItemRead
+	GetItemById(id string) (*domain.ItemRead, error)
 }
 
 type ItemRepository struct {
@@ -24,14 +26,34 @@ func (ir *ItemRepository) GetItems() []*domain.ItemRead {
 	items := getItemData(ir.clock)
 	itemReads := []*domain.ItemRead{}
 	for _, item := range items {
-		itemRead, err := domain.NewItemRead(item.Id, item.JanCode, item.ItemName, item.Price, item.CategoryId, item.SeriesId, item.Stock, item.Discontinued, item.ReleaseDate, item.DeletedAt)
-		if err != nil {
-			fmt.Println("itemRead construction error")
-		}
+		itemRead := domain.NewItemRead(item.Id, item.JanCode, item.ItemName, item.Price, item.CategoryId, item.SeriesId, item.Stock, item.Discontinued, item.ReleaseDate, item.DeletedAt)
 		itemReads = append(itemReads, itemRead)
 	}
 
 	return itemReads
+}
+
+func (ir *ItemRepository) GetItemById(id string) (*domain.ItemRead, customerr.RepositoryErrorInterface) {
+	items := getItemData(ir.clock)
+	var filtered []*data.ItemData
+	for _, item := range items {
+		if item.Id == id {
+			filtered = append(filtered, item)
+		}
+	}
+
+	if len(filtered) == 0 {
+		err := fmt.Errorf("item not found by id: %v", id)
+		return nil, &customerr.DataNotFoundError{Msg: err.Error(), Err: err}
+	} else if len(filtered) != 1 {
+		err := fmt.Errorf("duplicate item found by id: %v", id)
+		return nil, &customerr.TooManyResultsFoundError{Msg: err.Error(), Err: err}
+	}
+	item := filtered[0]
+
+	itemRead := domain.NewItemRead(item.Id, item.JanCode, item.ItemName, item.Price, item.CategoryId, item.SeriesId, item.Stock, item.Discontinued, item.ReleaseDate, item.DeletedAt)
+
+	return itemRead, nil
 }
 
 func getItemData(clock domain.Clock) []*data.ItemData {
