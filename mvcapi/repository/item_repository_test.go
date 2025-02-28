@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 	"mvc-api/domain"
-	"mvc-api/repository/customerr"
+	"mvc-api/repository/rcustomerr"
 	"testing"
 	"time"
 )
@@ -70,7 +70,7 @@ func TestGetItemById_存在しないIdでの検索(t *testing.T) {
 
 	// assert
 	if err != nil {
-		if result, ok := err.(*customerr.DataNotFoundError); ok {
+		if result, ok := err.(*rcustomerr.DataNotFoundError); ok {
 			if result.Error() != expectedErrMsg {
 				t.Errorf("want: %v, but: %v", expectedErrMsg, result)
 			}

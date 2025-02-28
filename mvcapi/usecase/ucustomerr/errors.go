@@ -1,6 +1,6 @@
-package customerr
+package ucustomerr
 
-type RepositoryErrorInterface interface {
+type UsecaseErrorInterface interface {
 	Error() string
 }
 

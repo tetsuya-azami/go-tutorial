@@ -26,7 +26,7 @@ func NewItemRead(
 	discontinued bool,
 	releaseDate time.Time,
 	deletedAt time.Time,
-) (*ItemRead, error) {
+) *ItemRead {
 	return &ItemRead{
 		id:           id,
 		janCode:      janCode,
@@ -38,7 +38,7 @@ func NewItemRead(
 		discontinued: discontinued,
 		releaseDate:  releaseDate,
 		deletedAt:    deletedAt,
-	}, nil
+	}
 }
 
 func (itemRead *ItemRead) IsDeleted() bool {

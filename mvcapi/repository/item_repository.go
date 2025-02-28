@@ -3,13 +3,13 @@ package repository
 import (
 	"fmt"
 	"mvc-api/domain"
-	"mvc-api/repository/customerr"
 	"mvc-api/repository/internal/data"
+	"mvc-api/repository/rcustomerr"
 )
 
 type ItemRepositoryInterface interface {
 	GetItems() []*domain.ItemRead
-	GetItemById(id string) (*domain.ItemRead, customerr.RepositoryErrorInterface)
+	GetItemById(id string) (*domain.ItemRead, rcustomerr.RepositoryErrorInterface)
 }
 
 type ItemRepository struct {
@@ -33,7 +33,7 @@ func (ir *ItemRepository) GetItems() []*domain.ItemRead {
 	return itemReads
 }
 
-func (ir *ItemRepository) GetItemById(id string) (*domain.ItemRead, customerr.RepositoryErrorInterface) {
+func (ir *ItemRepository) GetItemById(id string) (*domain.ItemRead, rcustomerr.RepositoryErrorInterface) {
 	items := getItemData(ir.clock)
 	var filtered []*data.ItemData
 	for _, item := range items {
@@ -44,10 +44,10 @@ func (ir *ItemRepository) GetItemById(id string) (*domain.ItemRead, customerr.Re
 
 	if len(filtered) == 0 {
 		err := fmt.Errorf("item not found by id: %v", id)
-		return nil, &customerr.DataNotFoundError{Msg: err.Error(), Err: err}
+		return nil, &rcustomerr.DataNotFoundError{Msg: err.Error(), Err: err}
 	} else if len(filtered) != 1 {
 		err := fmt.Errorf("duplicate item found by id: %v", id)
-		return nil, &customerr.TooManyResultsFoundError{Msg: err.Error(), Err: err}
+		return nil, &rcustomerr.TooManyResultsFoundError{Msg: err.Error(), Err: err}
 	}
 	item := filtered[0]
 
