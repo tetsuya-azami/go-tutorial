@@ -9,16 +9,16 @@ import (
 	"github.com/oapi-codegen/runtime/types"
 )
 
-type ItemGetterInterface interface {
+type ItemGetter interface {
 	GetItems() []*domain.ItemRead
 	GetItemById(id string) (*domain.ItemRead, usecase.ItemGetterErrors)
 }
 
 type ItemController struct {
-	itemGetter ItemGetterInterface
+	itemGetter ItemGetter
 }
 
-func NewItemsController(ig ItemGetterInterface) *ItemController {
+func NewItemsController(ig ItemGetter) *ItemController {
 	return &ItemController{itemGetter: ig}
 }
 

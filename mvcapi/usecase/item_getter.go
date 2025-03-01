@@ -8,7 +8,7 @@ import (
 	"mvc-api/usecase/ucustomerr"
 )
 
-type ItemRepositoryInterface interface {
+type ItemRepository interface {
 	GetItems() []*domain.ItemRead
 	GetItemById(id string) (*domain.ItemRead, repository.ItemRepositoryErrors)
 }
@@ -18,10 +18,10 @@ type ItemGetterErrors interface {
 }
 
 type ItemGetter struct {
-	itemRepository ItemRepositoryInterface
+	itemRepository ItemRepository
 }
 
-func NewItemGetter(iri ItemRepositoryInterface) *ItemGetter {
+func NewItemGetter(iri ItemRepository) *ItemGetter {
 	return &ItemGetter{itemRepository: iri}
 }
 
