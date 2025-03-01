@@ -1,9 +1,5 @@
 package rcustomerr
 
-type RepositoryErrorInterface interface {
-	Error() string
-}
-
 type DataNotFoundError struct {
 	Msg string
 	Err error

@@ -8,16 +8,20 @@ import (
 	"mvc-api/usecase/ucustomerr"
 )
 
-type ItemGetterInterface interface {
+type ItemRepositoryInterface interface {
 	GetItems() []*domain.ItemRead
-	GetItemById(id string) (*domain.ItemRead, ucustomerr.UsecaseErrorInterface)
+	GetItemById(id string) (*domain.ItemRead, repository.ItemRepositoryErrors)
+}
+
+type ItemGetterErrors interface {
+	Error() string
 }
 
 type ItemGetter struct {
-	itemRepository repository.ItemRepositoryInterface
+	itemRepository ItemRepositoryInterface
 }
 
-func NewItemGetter(iri repository.ItemRepositoryInterface) *ItemGetter {
+func NewItemGetter(iri ItemRepositoryInterface) *ItemGetter {
 	return &ItemGetter{itemRepository: iri}
 }
 
@@ -31,7 +35,7 @@ func (ig *ItemGetter) GetItems() []*domain.ItemRead {
 	return items
 }
 
-func (ig *ItemGetter) GetItemById(id string) (*domain.ItemRead, ucustomerr.UsecaseErrorInterface) {
+func (ig *ItemGetter) GetItemById(id string) (*domain.ItemRead, ItemGetterErrors) {
 	item, err := ig.itemRepository.GetItemById(id)
 	if err != nil {
 		if res, ok := err.(*rcustomerr.DataNotFoundError); ok {

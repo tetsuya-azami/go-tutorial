@@ -1,9 +1,5 @@
 package ucustomerr
 
-type UsecaseErrorInterface interface {
-	Error() string
-}
-
 type DataNotFoundError struct {
 	Msg string
 	Err error

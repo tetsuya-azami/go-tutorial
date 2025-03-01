@@ -7,9 +7,8 @@ import (
 	"mvc-api/repository/rcustomerr"
 )
 
-type ItemRepositoryInterface interface {
-	GetItems() []*domain.ItemRead
-	GetItemById(id string) (*domain.ItemRead, rcustomerr.RepositoryErrorInterface)
+type ItemRepositoryErrors interface {
+	Error() string
 }
 
 type ItemRepository struct {
@@ -33,7 +32,7 @@ func (ir *ItemRepository) GetItems() []*domain.ItemRead {
 	return itemReads
 }
 
-func (ir *ItemRepository) GetItemById(id string) (*domain.ItemRead, rcustomerr.RepositoryErrorInterface) {
+func (ir *ItemRepository) GetItemById(id string) (*domain.ItemRead, ItemRepositoryErrors) {
 	items := getItemData(ir.clock)
 	var filtered []*data.ItemData
 	for _, item := range items {

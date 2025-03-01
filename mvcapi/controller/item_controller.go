@@ -2,17 +2,23 @@ package controller
 
 import (
 	"context"
+	"mvc-api/domain"
 	api "mvc-api/openapi"
 	"mvc-api/usecase"
 
 	"github.com/oapi-codegen/runtime/types"
 )
 
-type ItemController struct {
-	itemGetter usecase.ItemGetterInterface
+type ItemGetterInterface interface {
+	GetItems() []*domain.ItemRead
+	GetItemById(id string) (*domain.ItemRead, usecase.ItemGetterErrors)
 }
 
-func NewItemsController(ig usecase.ItemGetterInterface) *ItemController {
+type ItemController struct {
+	itemGetter ItemGetterInterface
+}
+
+func NewItemsController(ig ItemGetterInterface) *ItemController {
 	return &ItemController{itemGetter: ig}
 }
 

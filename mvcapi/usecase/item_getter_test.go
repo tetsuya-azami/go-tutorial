@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"mvc-api/domain"
+	"mvc-api/repository"
 	"mvc-api/repository/rcustomerr"
 	"mvc-api/usecase/ucustomerr"
 	"testing"
@@ -14,7 +15,7 @@ var clock domain.Clock = &domain.FixedClock{
 
 type expectedBehabior int
 
-type MockedItemRepository struct {
+type mockedItemRepository struct {
 	items            []*domain.ItemRead
 	expectedBehabior expectedBehabior
 }
@@ -25,11 +26,11 @@ const (
 	TooManyResults
 )
 
-func (mir *MockedItemRepository) GetItems() []*domain.ItemRead {
+func (mir *mockedItemRepository) GetItems() []*domain.ItemRead {
 	return mir.items
 }
 
-func (mir *MockedItemRepository) GetItemById(id string) (*domain.ItemRead, rcustomerr.RepositoryErrorInterface) {
+func (mir *mockedItemRepository) GetItemById(id string) (*domain.ItemRead, repository.ItemRepositoryErrors) {
 	switch mir.expectedBehabior {
 	case Normal:
 		return domain.NewItemRead("1", "327390283080", "item_1", 2500, 1, 1, 100, false, clock.Now(), time.Time{}), nil
@@ -43,7 +44,7 @@ func (mir *MockedItemRepository) GetItemById(id string) (*domain.ItemRead, rcust
 
 func TestItemGetter_GetItems_結果が0件(t *testing.T) {
 	// arrange
-	itemGetter := NewItemGetter(&MockedItemRepository{items: []*domain.ItemRead{}})
+	itemGetter := NewItemGetter(&mockedItemRepository{items: []*domain.ItemRead{}})
 	wantCount := 0
 
 	// act
@@ -58,7 +59,7 @@ func TestItemGetter_GetItems_結果が0件(t *testing.T) {
 func TestItemGetter_GetItems_結果が1件(t *testing.T) {
 	// arrange
 	itemRead1 := domain.NewItemRead("1", "327390283080", "item_1", 2500, 1, 1, 100, false, clock.Now(), time.Time{})
-	itemGetter := NewItemGetter(&MockedItemRepository{items: []*domain.ItemRead{itemRead1}})
+	itemGetter := NewItemGetter(&mockedItemRepository{items: []*domain.ItemRead{itemRead1}})
 	wantCount := 1
 
 	// act
@@ -78,7 +79,7 @@ func TestItemGetter_GetItems_結果が複数件(t *testing.T) {
 	itemRead1 := domain.NewItemRead("1", "327390283080", "item_1", 2500, 1, 1, 100, false, clock.Now(), time.Time{})
 	itemRead2 := domain.NewItemRead("2", "222222222222", "item_2", 1200, 2, 2, 200, false, clock.Now(), time.Time{})
 	items := []*domain.ItemRead{itemRead1, itemRead2}
-	itemGetter := NewItemGetter(&MockedItemRepository{items: items})
+	itemGetter := NewItemGetter(&mockedItemRepository{items: items})
 	wantCount := 2
 
 	// act
@@ -99,7 +100,7 @@ func TestItemGetter_GetItems_結果が複数件(t *testing.T) {
 func TestItemGetter_GetItemById_正常系(t *testing.T) {
 	// arrange
 	itemRead := domain.NewItemRead("1", "327390283080", "item_1", 2500, 1, 1, 100, false, clock.Now(), time.Time{})
-	itemGetter := NewItemGetter(&MockedItemRepository{items: []*domain.ItemRead{itemRead}})
+	itemGetter := NewItemGetter(&mockedItemRepository{items: []*domain.ItemRead{itemRead}})
 	wantItem := itemRead
 
 	// act
@@ -116,7 +117,7 @@ func TestItemGetter_GetItemById_正常系(t *testing.T) {
 
 func TestItemGetter_GetItemById_対象のIdがない(t *testing.T) {
 	// arrange
-	itemGetter := NewItemGetter(&MockedItemRepository{expectedBehabior: DataNotFound})
+	itemGetter := NewItemGetter(&mockedItemRepository{expectedBehabior: DataNotFound})
 
 	// act
 	actualItem, err := itemGetter.GetItemById("2")
@@ -132,7 +133,7 @@ func TestItemGetter_GetItemById_対象のIdがない(t *testing.T) {
 
 func TestItemGetter_GetItemById_複数件ヒット(t *testing.T) {
 	// arrange
-	itemGetter := NewItemGetter(&MockedItemRepository{expectedBehabior: TooManyResults})
+	itemGetter := NewItemGetter(&mockedItemRepository{expectedBehabior: TooManyResults})
 
 	// act
 	actualItem, err := itemGetter.GetItemById("1")
