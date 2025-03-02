@@ -5,6 +5,7 @@ info:
 paths:
   /ping:
     get:
+      operationId: getPing
       responses:
         '200':
           description: pet response
@@ -14,6 +15,7 @@ paths:
                 $ref: '#/components/schemas/PingResponse'
   /items:
     get:
+      operationId: getItems
       responses:
         '200':
           description: get items response
@@ -28,7 +30,40 @@ paths:
                       $ref: '#/components/schemas/Item'
                 required:
                   - items
-
+  /items/{itemId}:
+    get:
+      operationId: getItemsById
+      parameters:
+        - name: itemId
+          in: path
+          description: item id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: get items response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  item:
+                    $ref: '#/components/schemas/Item'
+                required:
+                  - item
+        '404':
+          description: item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorResponse'
+        '500':
+          description: server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerErrorResponse'
 components:
   schemas:
     PingResponse:
@@ -84,3 +119,19 @@ components:
         - stock
         - discontinued
         - releasedDate
+    NotFoundErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: item not found
+      required:
+        - message
+    ServerErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: server error
+      required:
+        - message

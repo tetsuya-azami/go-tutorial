@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
@@ -27,8 +28,18 @@ type Item struct {
 	Stock        int64              `json:"stock"`
 }
 
+// NotFoundErrorResponse defines model for NotFoundErrorResponse.
+type NotFoundErrorResponse struct {
+	Message string `json:"message"`
+}
+
 // PingResponse defines model for PingResponse.
 type PingResponse struct {
+	Message string `json:"message"`
+}
+
+// ServerErrorResponse defines model for ServerErrorResponse.
+type ServerErrorResponse struct {
 	Message string `json:"message"`
 }
 
@@ -37,6 +48,9 @@ type ServerInterface interface {
 
 	// (GET /items)
 	GetItems(w http.ResponseWriter, r *http.Request)
+
+	// (GET /items/{itemId})
+	GetItemsById(w http.ResponseWriter, r *http.Request, itemId string)
 
 	// (GET /ping)
 	GetPing(w http.ResponseWriter, r *http.Request)
@@ -56,6 +70,31 @@ func (siw *ServerInterfaceWrapper) GetItems(w http.ResponseWriter, r *http.Reque
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetItems(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetItemsById operation middleware
+func (siw *ServerInterfaceWrapper) GetItemsById(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "itemId" -------------
+	var itemId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "itemId", mux.Vars(r)["itemId"], &itemId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "itemId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetItemsById(w, r, itemId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -194,6 +233,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 
 	r.HandleFunc(options.BaseURL+"/items", wrapper.GetItems).Methods("GET")
 
+	r.HandleFunc(options.BaseURL+"/items/{itemId}", wrapper.GetItemsById).Methods("GET")
+
 	r.HandleFunc(options.BaseURL+"/ping", wrapper.GetPing).Methods("GET")
 
 	return r
@@ -213,6 +254,43 @@ type GetItems200JSONResponse struct {
 func (response GetItems200JSONResponse) VisitGetItemsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetItemsByIdRequestObject struct {
+	ItemId string `json:"itemId"`
+}
+
+type GetItemsByIdResponseObject interface {
+	VisitGetItemsByIdResponse(w http.ResponseWriter) error
+}
+
+type GetItemsById200JSONResponse struct {
+	Item Item `json:"item"`
+}
+
+func (response GetItemsById200JSONResponse) VisitGetItemsByIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetItemsById404JSONResponse NotFoundErrorResponse
+
+func (response GetItemsById404JSONResponse) VisitGetItemsByIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetItemsById500JSONResponse ServerErrorResponse
+
+func (response GetItemsById500JSONResponse) VisitGetItemsByIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -238,6 +316,9 @@ type StrictServerInterface interface {
 
 	// (GET /items)
 	GetItems(ctx context.Context, request GetItemsRequestObject) (GetItemsResponseObject, error)
+
+	// (GET /items/{itemId})
+	GetItemsById(ctx context.Context, request GetItemsByIdRequestObject) (GetItemsByIdResponseObject, error)
 
 	// (GET /ping)
 	GetPing(ctx context.Context, request GetPingRequestObject) (GetPingResponseObject, error)
@@ -289,6 +370,32 @@ func (sh *strictHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetItemsResponseObject); ok {
 		if err := validResponse.VisitGetItemsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetItemsById operation middleware
+func (sh *strictHandler) GetItemsById(w http.ResponseWriter, r *http.Request, itemId string) {
+	var request GetItemsByIdRequestObject
+
+	request.ItemId = itemId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetItemsById(ctx, request.(GetItemsByIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetItemsById")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetItemsByIdResponseObject); ok {
+		if err := validResponse.VisitGetItemsByIdResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
