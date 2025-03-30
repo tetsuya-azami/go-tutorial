@@ -77,8 +77,29 @@ func restFunc() <-chan int {
 	return result
 }
 
+func practiceSelect() {
+	gen1, gen2 := make(chan int), make(chan int)
+
+	// if n1, ok := <-gen1; ok {
+	// 	fmt.Println(n1)
+	// } else if n2, ok := <-gen2; ok {
+	// 	fmt.Println(n2)
+	// } else {
+	// 	fmt.Println("neither cannot use")
+	// }
+	select {
+	case num := <-gen1:
+		fmt.Println(num)
+	case num := <-gen2:
+		fmt.Println(num)
+	default:
+		fmt.Println("neither cannot use")
+	}
+}
+
 func main() {
 	// getLuckyNumAndPrint()
 	// race()
 	// race2()
+	practiceSelect()
 }
