@@ -97,9 +97,39 @@ func practiceSelect() {
 	}
 }
 
+func generator(done chan struct{}) <-chan int {
+	result := make(chan int)
+	go func() {
+		defer close(result)
+
+		for {
+			for {
+				select {
+				case <-done:
+					return
+				default:
+					result <- 1
+				}
+			}
+		}
+	}()
+	return result
+}
+
+func callGenerator() {
+	done := make(chan struct{})
+	defer close(done)
+	result := generator(done)
+
+	for i := 0; i < 5; i++ {
+		fmt.Println(<-result)
+	}
+}
+
 func main() {
 	// getLuckyNumAndPrint()
 	// race()
 	// race2()
-	practiceSelect()
+	// practiceSelect()
+	callGenerator()
 }
