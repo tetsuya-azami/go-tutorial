@@ -97,32 +97,74 @@ func practiceSelect() {
 	}
 }
 
-func generator(done chan struct{}) <-chan int {
+func generator(done chan struct{}, i int) <-chan int {
 	result := make(chan int)
 	go func() {
 		defer close(result)
 
 		for {
-			for {
-				select {
-				case <-done:
-					return
-				default:
-					result <- 1
-				}
+			select {
+			case <-done:
+				fmt.Println("generator: doneに入りました")
+				return
+			default:
+				fmt.Println("generator: defaultに入りました")
+				result <- i
 			}
 		}
 	}()
 	return result
 }
 
-func callGenerator() {
-	done := make(chan struct{})
-	defer close(done)
-	result := generator(done)
+func fanIn1(done chan struct{}, c1, c2 <-chan int) <-chan int {
+	result := make(chan int)
 
+	go func() {
+		defer fmt.Println("closed fanin")
+		defer close(result)
+		for {
+			// caseはfor文で回せないので(=可変長は無理)
+			// 統合元のチャネルがスライスでくるとかだとこれはできない
+			// →応用編に続く
+			select {
+			case <-done:
+				fmt.Println("done")
+				return
+			case num := <-c1:
+				fmt.Println("send 1")
+				result <- num
+			case num := <-c2:
+				fmt.Println("send 2")
+				result <- num
+			default:
+				fmt.Println("continue")
+				continue
+			}
+		}
+	}()
+
+	return result
+}
+
+func useFanIn() {
+	done := make(chan struct{})
+
+	gen1 := generator(done, 1) // int 1をひたすら送信するチャネル(doneで止める)
+	gen2 := generator(done, 2) // int 2をひたすら送信するチャネル(doneで止める)
+
+	result := fanIn1(done, gen1, gen2) // 1か2を受け取り続けるチャネル
 	for i := 0; i < 5; i++ {
-		fmt.Println(<-result)
+		<-result
+	}
+	close(done)
+	fmt.Println("main close done")
+
+	// これを使って、main関数でcloseしている間に送信された値を受信しないと
+	// チャネルがブロックされてしまってゴールーチンリークになってしまう恐れがある
+	for {
+		if _, ok := <-result; !ok {
+			break
+		}
 	}
 }
 
@@ -131,5 +173,6 @@ func main() {
 	// race()
 	// race2()
 	// practiceSelect()
-	callGenerator()
+	// callGenerator()
+	useFanIn()
 }
