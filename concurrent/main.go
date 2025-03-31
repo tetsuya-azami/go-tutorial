@@ -168,11 +168,32 @@ func useFanIn() {
 	}
 }
 
+func chanelWithTimeout(c chan int) {
+	timeout := time.After(1 * time.Second)
+	for {
+		select {
+		case num := <-c:
+			fmt.Println(num)
+		case <-timeout:
+			fmt.Println("timeout")
+			return
+		}
+	}
+}
+
 func main() {
 	// getLuckyNumAndPrint()
 	// race()
 	// race2()
 	// practiceSelect()
 	// callGenerator()
-	useFanIn()
+	// useFanIn()
+	c := make(chan int)
+	go chanelWithTimeout(c)
+	c <- 1
+	c <- 2
+	c <- 3
+	c <- 4
+	c <- 5
+	time.Sleep(2 * time.Second)
 }
