@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sync"
@@ -181,6 +182,43 @@ func chanelWithTimeout(c chan int) {
 	}
 }
 
+var wg sync.WaitGroup
+
+func generatorWithContext(ctx context.Context, num int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer wg.Done()
+
+	LOOP:
+		for {
+			select {
+			case <-ctx.Done():
+				break LOOP
+			case out <- num:
+			}
+		}
+
+		close(out)
+		fmt.Println("generator closed")
+	}()
+
+	return out
+}
+
+func cancelUsingContext() {
+	ctx, cancel := context.WithCancel(context.Background())
+	gen := generatorWithContext(ctx, 1)
+
+	wg.Add(1)
+
+	for i := 0; i < 5; i++ {
+		fmt.Println(<-gen)
+	}
+
+	cancel()
+	wg.Wait()
+}
+
 func main() {
 	// getLuckyNumAndPrint()
 	// race()
@@ -188,12 +226,15 @@ func main() {
 	// practiceSelect()
 	// callGenerator()
 	// useFanIn()
-	c := make(chan int)
-	go chanelWithTimeout(c)
-	c <- 1
-	c <- 2
-	c <- 3
-	c <- 4
-	c <- 5
-	time.Sleep(2 * time.Second)
+
+	// c := make(chan int)
+	// go chanelWithTimeout(c)
+	// c <- 1
+	// c <- 2
+	// c <- 3
+	// c <- 4
+	// c <- 5
+	// time.Sleep(2 * time.Second)
+
+	cancelUsingContext()
 }
