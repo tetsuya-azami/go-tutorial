@@ -345,26 +345,68 @@ LOOP:
 	wg.Wait()
 }
 
+func afterFunc() {
+	ctx, cancel := context.WithCancel(context.Background())
+	stop := context.AfterFunc(ctx, func() {
+		fmt.Println("clean up done")
+	})
+	defer stop()
+
+	go func() {
+	LOOP:
+		for {
+			select {
+			case <-ctx.Done():
+				fmt.Println("done")
+				break LOOP
+			case <-time.Tick(time.Second):
+				fmt.Println("tick")
+			}
+		}
+	}()
+
+	time.Sleep(3 * time.Second)
+	cancel()
+	time.Sleep(2 * time.Second)
+}
+
+// func main() {
+// 	// getLuckyNumAndPrint()
+// 	// race()
+// 	// race2()
+// 	// practiceSelect()
+// 	// callGenerator()
+// 	// useFanIn()
+
+// 	// c := make(chan int)
+// 	// go chanelWithTimeout(c)
+// 	// c <- 1
+// 	// c <- 2
+// 	// c <- 3
+// 	// c <- 4
+// 	// c <- 5
+// 	// time.Sleep(2 * time.Second)
+
+// 	// cancelUsingContext()
+// 	// cancelPropagationSeries()
+// 	// cancelPropagationParalell()
+// 	// cancelPropagationSibling()
+// 	// deadlineWithContext()
+// 	afterFunc()
+// }
+
 func main() {
-	// getLuckyNumAndPrint()
-	// race()
-	// race2()
-	// practiceSelect()
-	// callGenerator()
-	// useFanIn()
+	var wg sync.WaitGroup
+	wg.Add(10)
 
-	// c := make(chan int)
-	// go chanelWithTimeout(c)
-	// c <- 1
-	// c <- 2
-	// c <- 3
-	// c <- 4
-	// c <- 5
-	// time.Sleep(2 * time.Second)
+	slice := make([]int, 0)
+	for i := 0; i < 10; i++ {
+		go func(i int) {
+			defer wg.Done()
+			slice = append(slice, i)
+		}(i)
+	}
 
-	// cancelUsingContext()
-	// cancelPropagationSeries()
-	// cancelPropagationParalell()
-	// cancelPropagationSibling()
-	deadlineWithContext()
+	wg.Wait()
+	fmt.Println(len(slice)) // 10になるとは限らない
 }
