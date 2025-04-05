@@ -303,6 +303,48 @@ func cancelPropagationSibling() {
 	time.Sleep(time.Second)
 }
 
+func generatorWithContextDeadline(ctx context.Context, num int) <-chan int {
+	out := make(chan int)
+
+	go func(c chan int) {
+		defer wg.Done()
+	LOOP:
+		for {
+			select {
+			case <-ctx.Done():
+				break LOOP
+				// case out <- num:
+			}
+		}
+	}(out)
+
+	close(out)
+
+	return out
+}
+
+func deadlineWithContext() {
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Minute))
+	gen := generatorWithContextDeadline(ctx, 1)
+
+	wg.Add(1)
+
+LOOP:
+	for i := 0; i < 5; i++ {
+		select {
+		case result, ok := <-gen:
+			if ok {
+				fmt.Println(result)
+			} else {
+				fmt.Println("timeout")
+				break LOOP
+			}
+		}
+	}
+	cancel()
+	wg.Wait()
+}
+
 func main() {
 	// getLuckyNumAndPrint()
 	// race()
@@ -323,5 +365,6 @@ func main() {
 	// cancelUsingContext()
 	// cancelPropagationSeries()
 	// cancelPropagationParalell()
-	cancelPropagationSibling()
+	// cancelPropagationSibling()
+	deadlineWithContext()
 }
