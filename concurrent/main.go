@@ -219,6 +219,90 @@ func cancelUsingContext() {
 	wg.Wait()
 }
 
+func cancelPropagationSeries() {
+	ctx0 := context.Background()
+	ctx1, _ := context.WithCancel(ctx0)
+	// G1
+	go func(ctx1 context.Context) {
+		ctx2, cancel2 := context.WithCancel(ctx1)
+
+		// G2-1
+		go func(ctx2 context.Context) {
+			// G2-2
+			go func(ctx2 context.Context) {
+				select {
+				case <-ctx2.Done():
+					fmt.Println("G2-2: canceled")
+				case <-time.After(time.Duration(1) * time.Second):
+					fmt.Println("G2-2: timeout")
+				}
+			}(ctx2)
+
+			select {
+			case <-ctx2.Done():
+				fmt.Println("G2-1: canceled")
+			}
+		}(ctx2)
+
+		time.Sleep(time.Duration(2) * time.Second)
+		cancel2()
+
+		select {
+		case <-ctx1.Done():
+			fmt.Println("G1: canceled")
+		}
+	}(ctx1)
+
+	time.Sleep(time.Second * 3)
+}
+
+func cancelPropagationParalell() {
+	ctx0 := context.Background()
+	ctx1, cancel1 := context.WithCancel(ctx0)
+	// G1-1
+	go func(ctx1 context.Context) {
+		select {
+		case <-ctx1.Done():
+			fmt.Println("G1-1: canceled")
+		}
+	}(ctx1)
+
+	// G1-2
+	go func(ctx1 context.Context) {
+		select {
+		case <-ctx1.Done():
+			fmt.Println("G1-2: canceled")
+		}
+	}(ctx1)
+
+	cancel1()
+	time.Sleep(time.Second)
+}
+
+func cancelPropagationSibling() {
+	ctx0 := context.Background()
+	ctx1, cancel1 := context.WithCancel(ctx0)
+	// G1
+	go func(ctx1 context.Context) {
+		select {
+		case <-ctx1.Done():
+			fmt.Println("G1: canceled")
+		}
+	}(ctx1)
+
+	ctx2, _ := context.WithCancel(ctx0)
+	// G2
+	go func(ctx2 context.Context) {
+		select {
+		case <-ctx2.Done():
+			fmt.Println("G2: canceled")
+		}
+	}(ctx2)
+
+	cancel1()
+	time.Sleep(time.Second)
+}
+
 func main() {
 	// getLuckyNumAndPrint()
 	// race()
@@ -236,5 +320,8 @@ func main() {
 	// c <- 5
 	// time.Sleep(2 * time.Second)
 
-	cancelUsingContext()
+	// cancelUsingContext()
+	// cancelPropagationSeries()
+	// cancelPropagationParalell()
+	cancelPropagationSibling()
 }
