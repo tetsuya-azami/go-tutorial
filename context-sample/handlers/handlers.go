@@ -46,6 +46,7 @@ var GetGreeting MyHandleFunc = func(ctx context.Context, req MyRequest) {
 	if data.Err != nil {
 		res.Code = 500
 		res.Body = "Internal Server Error"
+		res.Err = data.Err
 		fmt.Println(res)
 		cancel()
 		return
@@ -62,6 +63,4 @@ func NotFoundHandler(ctx context.Context, req MyRequest) {
 	res.Code = 404
 	res.Body = "Not Found"
 	fmt.Println(res)
-
-	return
 }
