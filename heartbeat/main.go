@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"time"
 )
@@ -27,6 +26,7 @@ func doWork(done chan struct{}, pulseInterval time.Duration) (<-chan struct{}, <
 		defer close(result)
 
 		pulse := time.Tick(pulseInterval)
+		stopHeartBeat := time.After(2 * time.Second) // heart beatを止める用
 		workGen := time.Tick(2 * pulseInterval)
 
 		sendResult := func(r time.Time) {
@@ -49,11 +49,11 @@ func doWork(done chan struct{}, pulseInterval time.Duration) (<-chan struct{}, <
 				case heartBeat <- struct{}{}:
 				default: // heart beatを受け取る人がいない場合にブロックするのを防ぐために必要
 				}
+			case <-stopHeartBeat:
+				time.Sleep(10 * time.Second) // heart beatを止める用
 			case r := <-workGen:
 				sendResult(r)
 			case <-done:
-				time.Sleep(time.Second)
-				result <- NewResult("", errors.New("do not work"))
 				return
 			}
 		}
@@ -88,6 +88,9 @@ func main() {
 			} else {
 				fmt.Printf("receive result: %v\n", r)
 			}
+		case <-time.After(1500 * time.Millisecond):
+			fmt.Println("unhealthy worker")
+			return
 		}
 	}
 
