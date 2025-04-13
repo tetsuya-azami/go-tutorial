@@ -26,7 +26,7 @@ func doWork(done chan struct{}, pulseInterval time.Duration) (<-chan struct{}, <
 		defer close(result)
 
 		pulse := time.Tick(pulseInterval)
-		stopHeartBeat := time.After(2 * time.Second) // heart beatを止める用
+		stopHeartBeat := time.After(2500 * time.Millisecond) // heart beatを止める用
 		workGen := time.Tick(2 * pulseInterval)
 
 		sendResult := func(r time.Time) {
